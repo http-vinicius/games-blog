@@ -21,7 +21,7 @@ export function ThemeToggle() {
   //  {isDark ? '☀️ Light' : '🌙 Dark'
 
   return (
-    <div className='flex items-center space-x-2'>
+    <div className='flex items-center space-x-2 w-32'>
       <Switch
         id='airplane-mode'
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

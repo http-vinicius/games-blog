@@ -4,23 +4,22 @@ import * as React from 'react';
 
 import {
   Calendar,
+  Gamepad2,
   Home,
-  Inbox,
+  IdCard,
   Search,
   Settings,
-  Gamepad2,
-  Eye,
-  BookOpenText,
   Users,
-  IdCard,
 } from 'lucide-react';
 
+import { ThemeToggle } from '@/components/theme-toggle';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -28,16 +27,13 @@ import {
 } from '@/components/ui/sidebar';
 
 const items = [
-  { title: 'Home', url: '/', icon: Home },
-  { title: 'Notícias', url: '/noticias', icon: Inbox },
-  { title: 'Categorias', url: '/categorias', icon: Calendar },
-  { title: 'Tags', url: '/tags', icon: Search },
-  { title: 'Jogos', url: '/jogos', icon: Gamepad2 },
-  { title: 'Reviews', url: '/reviews', icon: Eye },
-  { title: 'Guias/Tutoriais', url: '/guias-tutoriais', icon: BookOpenText },
-  { title: 'Usuários', url: '/usuarios', icon: Users },
-  { title: 'Cargos/Funções', url: '/cargos-funcoes', icon: IdCard },
-  { title: 'Configurações', url: '/configuracoes', icon: Settings },
+  { title: 'Home', url: '/dashboard', icon: Home },
+  { title: 'Categorias', url: 'categorias', icon: Calendar },
+  { title: 'Tags', url: 'tags', icon: Search },
+  { title: 'Jogos', url: 'jogos', icon: Gamepad2 },
+  { title: 'Usuários', url: 'usuarios', icon: Users },
+  { title: 'Cargos/Funções', url: 'cargos-funcoes', icon: IdCard },
+  { title: 'Configurações', url: 'configuracoes', icon: Settings },
 ];
 
 export default function DashboardLayout({
@@ -46,18 +42,22 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <SidebarProvider>
-        <Sidebar>
+    <SidebarProvider>
+      <div className='flex min-h-screen w-full'>
+        <Sidebar className='shrink-0'>
+          <SidebarHeader>MY GAME NEWS</SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Application</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
+                      {JSON.stringify(item.url)}
                       <SidebarMenuButton asChild>
-                        <a href={item.url} className='flex items-center gap-2'>
+                        <a
+                          href={`${item.url}`}
+                          className='flex items-center gap-2'
+                        >
                           <item.icon className='size-4' />
                           <span>{item.title}</span>
                         </a>
@@ -68,9 +68,12 @@ export default function DashboardLayout({
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
+          <SidebarFooter className='justify-items-center flow-root p-10'>
+            <ThemeToggle />
+          </SidebarFooter>
         </Sidebar>
-      </SidebarProvider>
-      {children}
-    </>
+        <main className='flex-1 p-6'>{children}</main>
+      </div>
+    </SidebarProvider>
   );
 }
