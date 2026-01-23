@@ -10,6 +10,7 @@ import {
   Search,
   Settings,
   Users,
+  NotebookPen,
 } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -25,12 +26,14 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from '@/components/ui/sidebar';
+import Link from 'next/link';
 
 const items = [
-  { title: 'Home', url: '/dashboard', icon: Home },
+  { title: 'Home', url: '/', icon: Home },
+  { title: 'Posts', url: 'posts', icon: NotebookPen },
+  { title: 'Jogos', url: 'jogos', icon: Gamepad2 },
   { title: 'Categorias', url: 'categorias', icon: Calendar },
   { title: 'Tags', url: 'tags', icon: Search },
-  { title: 'Jogos', url: 'jogos', icon: Gamepad2 },
   { title: 'Usuários', url: 'usuarios', icon: Users },
   { title: 'Cargos/Funções', url: 'cargos-funcoes', icon: IdCard },
   { title: 'Configurações', url: 'configuracoes', icon: Settings },
@@ -52,15 +55,14 @@ export default function DashboardLayout({
                 <SidebarMenu>
                   {items.map((item) => (
                     <SidebarMenuItem key={item.title}>
-                      {JSON.stringify(item.url)}
                       <SidebarMenuButton asChild>
-                        <a
-                          href={`${item.url}`}
+                        <Link
+                          href={`/dashboard/${item.url}`}
                           className='flex items-center gap-2'
                         >
                           <item.icon className='size-4' />
                           <span>{item.title}</span>
-                        </a>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
@@ -72,7 +74,7 @@ export default function DashboardLayout({
             <ThemeToggle />
           </SidebarFooter>
         </Sidebar>
-        <main className='flex-1 p-6'>{children}</main>
+        <main className='flex flex-1 p-6'>{children}</main>
       </div>
     </SidebarProvider>
   );
