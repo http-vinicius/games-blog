@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { Nunito_Sans } from 'next/font/google';
-import './globals.css';
 import ReactQueryProvider from '@/components/ReactQueryProvider';
+import { ThemeProvider } from '@/components/theme-provider';
+import './globals.css';
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
@@ -23,8 +24,12 @@ export default function RootLayout({
       <body
         className={`${nunitoSans.variable} antialiased`}
         style={{ fontFamily: 'var(--font-nunito-sans)' }}
+        //TODO: remover quando for supir em produção
+        suppressHydrationWarning
       >
-        <ReactQueryProvider>{children}</ReactQueryProvider>
+        <ThemeProvider>
+          <ReactQueryProvider>{children}</ReactQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
