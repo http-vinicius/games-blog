@@ -1,5 +1,7 @@
 'use client';
 
+import { Moon, Sun } from 'lucide-react';
+
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useTheme } from 'next-themes';
@@ -26,7 +28,7 @@ export function ThemeToggle() {
         id='airplane-mode'
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       />
-      <Label htmlFor='airplane-mode'>{isDark ? '🌙 escuro' : '☀️ claro'}</Label>
+      <Label htmlFor='airplane-mode'>{isDark ? <Sun /> : <Moon />}</Label>
     </div>
   );
 }

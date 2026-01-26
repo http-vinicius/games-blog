@@ -19,6 +19,8 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -133,6 +135,46 @@
   --success-foreground: oklch(98.5% 0 0);
   --text: oklch(98.5% 0 0);
   --text-foreground: oklch(14.1% 0.005 285.823);
+}
+
+.tiptap.ProseMirror {
+  outline: none;
+}
+
+/* Headings visíveis */
+.tiptap.ProseMirror h2 {
+  font-size: 1.5rem; /* 24px */
+  line-height: 2rem;
+  font-weight: 700;
+  margin: 1.25rem 0 0.5rem;
+}
+
+.tiptap.ProseMirror h3 {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.75rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+}
+
+.tiptap.ProseMirror h4 {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.5rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.5rem;
+}
+
+/* Parágrafo */
+.tiptap.ProseMirror p {
+  margin: 0.75rem 0;
+}
+
+/* Imagens */
+.tiptap.ProseMirror img {
+  border-radius: 12px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
 }
 
 @layer base {

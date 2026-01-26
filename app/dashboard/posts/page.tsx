@@ -1,15 +1,13 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
+import Link from 'next/link';
+
+import { CardUI } from '@/components/cardUI';
 import Grid from '@/components/grid';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { X } from 'lucide-react';
 
 const dadosMock = [
   {
@@ -60,10 +58,14 @@ const dadosMock = [
 ];
 
 const Posts = () => {
+  const router = useRouter();
+
   return (
     <div className='container'>
       <Grid styles='grid grid-flow-col justify-items-end pb-5'>
-        <Button onClick={() => {}}>Criar Post</Button>
+        <Button onClick={() => router.push('/dashboard/posts/criar-post')}>
+          Criar Post
+        </Button>
       </Grid>
       <Grid lg='lg:grid-cols-4' styles={'gap-4'}>
         {dadosMock.map((post) => (
@@ -72,12 +74,24 @@ const Posts = () => {
             md='md:grid-cols-2'
             sm='sm:grid-cols-1'
             styles='gap-4'
+            key={post.id}
           >
-            <Card key={post.id} className='w-full'>
-              <CardHeader>{post.titulo}</CardHeader>
-              <CardContent>{post.conteudo}</CardContent>
-              <CardFooter>botões</CardFooter>
-            </Card>
+            <CardUI>
+              <CardUI.Header>
+                <CardUI.Title>{post.titulo}</CardUI.Title>
+                <CardUI.Action>
+                  <Button variant='destructive' size='sm'>
+                    <X className='h-4 w-4' />
+                  </Button>
+                </CardUI.Action>
+              </CardUI.Header>
+              <CardUI.Content>{post.conteudo}</CardUI.Content>
+              <CardUI.Footer>
+                <Button variant='default' className='w-full'>
+                  Editar
+                </Button>
+              </CardUI.Footer>
+            </CardUI>
           </Grid>
         ))}
       </Grid>
