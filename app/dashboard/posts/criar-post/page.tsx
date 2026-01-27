@@ -1,13 +1,74 @@
 'use client';
 
-import React from 'react';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import Placeholder from '@tiptap/extension-placeholder';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import TextAlign from '@tiptap/extension-text-align';
-import Placeholder from '@tiptap/extension-placeholder';
+import * as React from 'react';
+
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  Heading2,
+  Heading3,
+  Heading4,
+  Image as ImageIcon,
+  Italic,
+  Link as LinkIcon,
+  List,
+  ListOrdered,
+  Minus,
+  Pilcrow,
+  Quote,
+  Redo2,
+  Save,
+  Strikethrough,
+  Trash2,
+  Underline as UnderlineIcon,
+  Undo2,
+  Unlink,
+} from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type PostPayload = {
   title: string;
@@ -28,7 +89,6 @@ function slugify(input: string) {
 }
 
 async function uploadImage(file: File): Promise<string> {
-  // ✅ Troque esse endpoint pelo seu (/api/upload) — igual eu mostrei antes
   const form = new FormData();
   form.append('file', file);
 
@@ -39,35 +99,217 @@ async function uploadImage(file: File): Promise<string> {
   return data.url;
 }
 
-const ToolbarButton = ({
+function ToolbarIconButton({
+  icon,
+  label,
+  onClick,
   active,
   disabled,
-  onClick,
-  children,
-  title,
 }: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
   active?: boolean;
   disabled?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  title?: string;
-}) => (
-  <button
-    type='button'
-    title={title}
-    disabled={disabled}
-    onClick={onClick}
-    className={[
-      'rounded-md border px-3 py-1 text-sm transition',
-      disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted',
-      active ? 'bg-muted font-medium' : '',
-    ].join(' ')}
-  >
-    {children}
-  </button>
-);
+}) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type='button'
+            variant={active ? 'secondary' : 'outline'}
+            size='icon'
+            disabled={disabled}
+            onClick={onClick}
+            className={cn('h-9 w-9', active && 'border-primary/40')}
+          >
+            {icon}
+            <span className='sr-only'>{label}</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
-const CriarPost = () => {
+function EditorToolbar({
+  editor,
+  onPickImageClick,
+}: {
+  editor: NonNullable<ReturnType<typeof useEditor>>;
+  onPickImageClick: () => void;
+}) {
+  const canUndo = editor.can().chain().focus().undo().run();
+  const canRedo = editor.can().chain().focus().redo().run();
+
+  return (
+    <div className='flex flex-wrap items-center gap-2 rounded-md border bg-background p-3'>
+      <ToolbarIconButton
+        label='Desfazer'
+        disabled={!canUndo}
+        onClick={() => editor.chain().focus().undo().run()}
+        icon={<Undo2 className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Refazer'
+        disabled={!canRedo}
+        onClick={() => editor.chain().focus().redo().run()}
+        icon={<Redo2 className='h-4 w-4' />}
+      />
+
+      <Separator orientation='vertical' className='mx-1 h-7' />
+
+      <ToolbarIconButton
+        label='Negrito'
+        active={editor.isActive('bold')}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        icon={<Bold className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Itálico'
+        active={editor.isActive('italic')}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        icon={<Italic className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Sublinhado'
+        active={editor.isActive('underline')}
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        icon={<UnderlineIcon className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Riscado'
+        active={editor.isActive('strike')}
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        icon={<Strikethrough className='h-4 w-4' />}
+      />
+
+      <Separator orientation='vertical' className='mx-1 h-7' />
+
+      <ToolbarIconButton
+        label='Título H2'
+        active={editor.isActive('heading', { level: 2 })}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        icon={<Heading2 className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Título H3'
+        active={editor.isActive('heading', { level: 3 })}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        icon={<Heading3 className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Título H4'
+        active={editor.isActive('heading', { level: 4 })}
+        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+        icon={<Heading4 className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Parágrafo'
+        active={editor.isActive('paragraph')}
+        onClick={() => editor.chain().focus().setParagraph().run()}
+        icon={<Pilcrow className='h-4 w-4' />}
+      />
+
+      <Separator orientation='vertical' className='mx-1 h-7' />
+
+      <ToolbarIconButton
+        label='Lista'
+        active={editor.isActive('bulletList')}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        icon={<List className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Lista numerada'
+        active={editor.isActive('orderedList')}
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        icon={<ListOrdered className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Citação'
+        active={editor.isActive('blockquote')}
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        icon={<Quote className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Linha horizontal'
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        icon={<Minus className='h-4 w-4' />}
+      />
+      {/* <ToolbarIconButton
+        label='Citação (Blockquote)'
+        active={editor.isActive('blockquote')}
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        icon={<Quote className='h-4 w-4' />}
+      /> */}
+
+      <Separator orientation='vertical' className='mx-1 h-7' />
+
+      <ToolbarIconButton
+        label='Alinhar à esquerda'
+        active={editor.isActive({ textAlign: 'left' })}
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        icon={<AlignLeft className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Centralizar'
+        active={editor.isActive({ textAlign: 'center' })}
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        icon={<AlignCenter className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Alinhar à direita'
+        active={editor.isActive({ textAlign: 'right' })}
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        icon={<AlignRight className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Justificar'
+        active={editor.isActive({ textAlign: 'justify' })}
+        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+        icon={<AlignJustify className='h-4 w-4' />}
+      />
+
+      <Separator orientation='vertical' className='mx-1 h-7' />
+
+      <ToolbarIconButton
+        label='Adicionar/editar link'
+        active={editor.isActive('link')}
+        onClick={() => {
+          const previousUrl = editor.getAttributes('link').href as
+            | string
+            | undefined;
+          const url = window.prompt('Cole a URL:', previousUrl ?? '');
+          if (url === null) return;
+          if (url.trim() === '') {
+            editor.chain().focus().unsetLink().run();
+            return;
+          }
+          editor.chain().focus().setLink({ href: url.trim() }).run();
+        }}
+        icon={<LinkIcon className='h-4 w-4' />}
+      />
+      <ToolbarIconButton
+        label='Remover link'
+        disabled={!editor.isActive('link')}
+        onClick={() => editor.chain().focus().unsetLink().run()}
+        icon={<Unlink className='h-4 w-4' />}
+      />
+
+      <Separator orientation='vertical' className='mx-1 h-7' />
+
+      <ToolbarIconButton
+        label='Upload de imagem'
+        onClick={onPickImageClick}
+        icon={<ImageIcon className='h-4 w-4' />}
+      />
+    </div>
+  );
+}
+
+export default function CriarPost() {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const [title, setTitle] = React.useState('');
@@ -81,12 +323,10 @@ const CriarPost = () => {
 
   const editor = useEditor({
     immediatelyRender: false,
-    onUpdate: ({ editor }) => {
-      setContentJson(editor.getJSON());
-    },
+    onUpdate: ({ editor }) => setContentJson(editor.getJSON()),
     extensions: [
       StarterKit.configure({
-        heading: { levels: [2, 3, 4] }, // vamos usar Heading com levels configurados
+        heading: { levels: [2, 3, 4] },
       }),
       Underline,
       Link.configure({
@@ -107,12 +347,7 @@ const CriarPost = () => {
     ],
     content: {
       type: 'doc',
-      content: [
-        {
-          type: 'paragraph',
-          content: [{ type: 'text', text: '' }],
-        },
-      ],
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }],
     },
     editorProps: {
       attributes: {
@@ -147,22 +382,8 @@ const CriarPost = () => {
       e.target.value = '';
     } catch (err) {
       console.error(err);
-      alert('Não foi possível enviar a imagem.');
+      window.alert('Não foi possível enviar a imagem.');
     }
-  }
-
-  function setLink() {
-    if (!editor) return;
-    const previousUrl = editor.getAttributes('link').href as string | undefined;
-    const url = window.prompt('Cole a URL:', previousUrl ?? '');
-
-    if (url === null) return; // cancelou
-    if (url.trim() === '') {
-      editor.chain().focus().unsetLink().run();
-      return;
-    }
-
-    editor.chain().focus().setLink({ href: url.trim() }).run();
   }
 
   async function handleSave() {
@@ -175,16 +396,15 @@ const CriarPost = () => {
       contentJson: editor.getJSON(),
     };
 
-    if (!payload.title) return alert('Digite o título.');
-    if (!payload.slug) return alert('Digite o slug.');
-    if (!payload.excerpt) return alert('Digite o resumo.');
+    if (!payload.title) return window.alert('Digite o título.');
+    if (!payload.slug) return window.alert('Digite o slug.');
+    if (!payload.excerpt) return window.alert('Digite o resumo.');
     if (!payload.contentJson?.content?.length)
-      return alert('Digite o conteúdo.');
+      return window.alert('Digite o conteúdo.');
 
     try {
       setSaving(true);
 
-      // ✅ Troque para seu endpoint real (ex: POST /api/posts)
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -193,247 +413,132 @@ const CriarPost = () => {
 
       if (!res.ok) throw new Error('Falha ao salvar post');
 
-      alert('Post salvo!');
+      window.alert('Post salvo!');
     } catch (err) {
       console.error(err);
-      alert('Erro ao salvar post.');
+      window.alert('Erro ao salvar post.');
     } finally {
       setSaving(false);
     }
   }
 
-  if (!editor) return null;
+  function handleClear() {
+    if (!editor) return;
+    editor.chain().focus().clearContent().run();
+    setTitle('');
+    setSlug('');
+    setExcerpt('');
+    setAutoSlug(true);
+  }
 
-  const canUndo = editor.can().chain().focus().undo().run();
-  const canRedo = editor.can().chain().focus().redo().run();
+  if (!editor) return null;
 
   return (
     <div className='mx-auto w-full max-w-4xl space-y-6 p-6'>
       <div className='space-y-2'>
         <h1 className='text-2xl font-semibold'>Criar post</h1>
-        <p className='text-sm text-muted-foreground'>
-          Use H2/H3/H4 dentro do conteúdo. O H1 fica para o título do post.
-        </p>
       </div>
 
-      {/* Campos do post */}
-      <div className='grid gap-4 rounded-md border p-4'>
-        <div className='grid gap-2'>
-          <label className='text-sm font-medium'>Título</label>
-          <input
-            className='h-10 rounded-md border px-3'
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder='Ex: GTA 6 pode ser adiado, dizem rumores...'
-          />
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados do post</CardTitle>
+          <CardDescription>
+            Preencha título, slug e resumo. O conteúdo é editado abaixo.
+          </CardDescription>
+        </CardHeader>
 
-        <div className='grid gap-2'>
-          <div className='flex items-center justify-between gap-3'>
-            <label className='text-sm font-medium'>Slug</label>
-            <label className='flex items-center gap-2 text-sm text-muted-foreground'>
-              <input
-                type='checkbox'
-                checked={autoSlug}
-                onChange={(e) => setAutoSlug(e.target.checked)}
-              />
-              Gerar automaticamente
-            </label>
+        <CardContent className='grid gap-4'>
+          <div className='grid gap-2'>
+            <Label htmlFor='title'>Título</Label>
+            <Input
+              id='title'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder='Ex: GTA 6 pode ser adiado, dizem rumores...'
+            />
           </div>
 
-          <input
-            className='h-10 rounded-md border px-3'
-            value={slug}
-            onChange={(e) => {
-              setAutoSlug(false);
-              setSlug(e.target.value);
-            }}
-            placeholder='gta-6-pode-ser-adiado'
-          />
-        </div>
+          <div className='grid gap-2'>
+            <div className='flex items-center justify-between gap-4'>
+              <Label htmlFor='slug'>Slug</Label>
 
-        <div className='grid gap-2'>
-          <label className='text-sm font-medium'>Resumo</label>
-          <textarea
-            className='min-h-[90px] rounded-md border px-3 py-2'
-            value={excerpt}
-            onChange={(e) => setExcerpt(e.target.value)}
-            placeholder='Um resumo curto para listagem/SEO...'
-          />
-        </div>
-      </div>
+              <div className='flex items-center gap-2'>
+                <Switch
+                  id='autoSlug'
+                  checked={autoSlug}
+                  onCheckedChange={(checked) => setAutoSlug(checked)}
+                />
+                <Label
+                  htmlFor='autoSlug'
+                  className='text-sm font-normal text-muted-foreground'
+                >
+                  Gerar automaticamente
+                </Label>
+              </div>
+            </div>
 
-      {/* Toolbar */}
-      <div className='flex flex-wrap gap-2 rounded-md border p-3'>
-        <ToolbarButton
-          title='Desfazer'
-          disabled={!canUndo}
-          onClick={() => editor.chain().focus().undo().run()}
-        >
-          Undo
-        </ToolbarButton>
-        <ToolbarButton
-          title='Refazer'
-          disabled={!canRedo}
-          onClick={() => editor.chain().focus().redo().run()}
-        >
-          Redo
-        </ToolbarButton>
+            <Input
+              id='slug'
+              value={slug}
+              onChange={(e) => {
+                setAutoSlug(false);
+                setSlug(e.target.value);
+              }}
+              placeholder='gta-6-pode-ser-adiado'
+            />
+          </div>
 
-        <div className='mx-1 h-7 w-px bg-border' />
+          <div className='grid gap-2'>
+            <Label htmlFor='excerpt'>Resumo</Label>
+            <Textarea
+              id='excerpt'
+              className='min-h-[90px]'
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder='Um resumo curto para listagem/SEO...'
+            />
+          </div>
+        </CardContent>
 
-        <ToolbarButton
-          title='Negrito'
-          active={editor.isActive('bold')}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-        >
-          Bold
-        </ToolbarButton>
-        <ToolbarButton
-          title='Itálico'
-          active={editor.isActive('italic')}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-        >
-          Italic
-        </ToolbarButton>
-        <ToolbarButton
-          title='Sublinhado'
-          active={editor.isActive('underline')}
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-        >
-          Underline
-        </ToolbarButton>
-        <ToolbarButton
-          title='Riscado'
-          active={editor.isActive('strike')}
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-        >
-          Strike
-        </ToolbarButton>
+        <CardFooter className='justify-end gap-2'>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant='outline' disabled={saving}>
+                <Trash2 className='mr-2 h-4 w-4' />
+                Limpar
+              </Button>
+            </AlertDialogTrigger>
 
-        <div className='mx-1 h-7 w-px bg-border' />
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Limpar formulário?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Isso vai apagar título, slug, resumo e limpar o conteúdo do
+                  editor.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClear} className='gap-2'>
+                  Limpar agora
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
-        <ToolbarButton
-          title='H2'
-          active={editor.isActive('heading', { level: 2 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-        >
-          H2
-        </ToolbarButton>
-        <ToolbarButton
-          title='H3'
-          active={editor.isActive('heading', { level: 3 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
-        >
-          H3
-        </ToolbarButton>
-        <ToolbarButton
-          title='H4'
-          active={editor.isActive('heading', { level: 4 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 4 }).run()
-          }
-        >
-          H4
-        </ToolbarButton>
-        <ToolbarButton
-          title='Parágrafo'
-          active={editor.isActive('paragraph')}
-          onClick={() => editor.chain().focus().setParagraph().run()}
-        >
-          P
-        </ToolbarButton>
+          <Button onClick={handleSave} disabled={saving}>
+            <Save className='mr-2 h-4 w-4' />
+            {saving ? 'Salvando...' : 'Salvar post'}
+          </Button>
+        </CardFooter>
+      </Card>
 
-        <div className='mx-1 h-7 w-px bg-border' />
+      <div className='space-y-3'>
+        <EditorToolbar
+          editor={editor}
+          onPickImageClick={() => fileInputRef.current?.click()}
+        />
 
-        <ToolbarButton
-          title='Lista'
-          active={editor.isActive('bulletList')}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-        >
-          • Lista
-        </ToolbarButton>
-        <ToolbarButton
-          title='Lista numerada'
-          active={editor.isActive('orderedList')}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        >
-          1. Lista
-        </ToolbarButton>
-        <ToolbarButton
-          title='Citação'
-          active={editor.isActive('blockquote')}
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        >
-          Quote
-        </ToolbarButton>
-        <ToolbarButton
-          title='Linha'
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-        >
-          HR
-        </ToolbarButton>
-
-        <div className='mx-1 h-7 w-px bg-border' />
-
-        <ToolbarButton
-          title='Alinhar à esquerda'
-          active={editor.isActive({ textAlign: 'left' })}
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        >
-          Left
-        </ToolbarButton>
-        <ToolbarButton
-          title='Centralizar'
-          active={editor.isActive({ textAlign: 'center' })}
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        >
-          Center
-        </ToolbarButton>
-        <ToolbarButton
-          title='Alinhar à direita'
-          active={editor.isActive({ textAlign: 'right' })}
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        >
-          Right
-        </ToolbarButton>
-        <ToolbarButton
-          title='Justificar'
-          active={editor.isActive({ textAlign: 'justify' })}
-          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-        >
-          Justify
-        </ToolbarButton>
-
-        <div className='mx-1 h-7 w-px bg-border' />
-
-        <ToolbarButton
-          title='Adicionar/editar link'
-          active={editor.isActive('link')}
-          onClick={setLink}
-        >
-          Link
-        </ToolbarButton>
-        <ToolbarButton
-          title='Remover link'
-          disabled={!editor.isActive('link')}
-          onClick={() => editor.chain().focus().unsetLink().run()}
-        >
-          Unlink
-        </ToolbarButton>
-
-        <div className='mx-1 h-7 w-px bg-border' />
-
-        <ToolbarButton
-          title='Upload de imagem'
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Imagem
-        </ToolbarButton>
         <input
           ref={fileInputRef}
           type='file'
@@ -441,51 +546,51 @@ const CriarPost = () => {
           hidden
           onChange={handlePickImage}
         />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Conteúdo</CardTitle>
+            <CardDescription>
+              Escreva e formate o conteúdo do post.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={cn(
+                // 🔹 Blockquote estilo editorial (Medium-like)
+                '[&_blockquote]:border-l-2',
+                '[&_blockquote]:border-primary',
+                '[&_blockquote]:pl-4',
+                '[&_blockquote]:ml-1',
+                '[&_blockquote]:my-6',
+
+                // 🔹 Texto limpo (sem itálico pesado)
+                '[&_blockquote]:not-italic',
+                '[&_blockquote_p]:text-foreground',
+                '[&_blockquote_p]:leading-relaxed'
+              )}
+            >
+              <EditorContent editor={editor} />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Editor */}
-      <div className='rounded-md border p-3'>
-        <EditorContent editor={editor} />
-      </div>
-
-      {/* Ações */}
-      <div className='flex items-center justify-end gap-2'>
-        <button
-          type='button'
-          onClick={() => {
-            editor.chain().focus().clearContent().run();
-            setTitle('');
-            setSlug('');
-            setExcerpt('');
-            setAutoSlug(true);
-          }}
-          className='rounded-md border px-4 py-2'
-          disabled={saving}
-        >
-          Limpar
-        </button>
-
-        <button
-          type='button'
-          onClick={handleSave}
-          className='rounded-md border px-4 py-2 font-medium'
-          disabled={saving}
-        >
-          {saving ? 'Salvando...' : 'Salvar post'}
-        </button>
-      </div>
-
-      {/* Debug opcional: ver JSON */}
-      <details className='rounded-md border p-4'>
-        <summary className='cursor-pointer text-sm font-medium'>
-          Ver JSON do conteúdo (debug)
-        </summary>
-        <pre className='mt-3 overflow-auto rounded bg-muted p-3 text-xs'>
-          {JSON.stringify(contentJson, null, 2)}
-        </pre>
-      </details>
+      <Card>
+        <CardHeader>
+          <CardTitle>JSON do conteúdo (debug)</CardTitle>
+          <CardDescription>
+            Útil para conferir o output que será salvo no backend.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className='h-[260px] w-full rounded-md border bg-muted'>
+            <pre className='p-3 text-xs'>
+              {JSON.stringify(contentJson, null, 2)}
+            </pre>
+          </ScrollArea>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default CriarPost;
+}
